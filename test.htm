@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+	<head>
+		<style>
+			#keyboard div {
+				font-family:sans-serif;
+				padding: 10px;
+				margin: 5px;
+				width: 60px;
+				height: 60px;
+				font-size: x-large;
+				border-radius: 5px;
+				background-color: #cdccd1;
+				display:inline-block;
+				background-image: -webkit-gradient(
+						linear,
+						left top,
+						left bottom,
+						color-stop(0, rgb(231,231,233)),
+						color-stop(1, rgb(166,166,172))
+				);
+				-webkit-box-shadow: 5px 5px 5px gray;
+			}
+			#keyboard {
+				background-color: #84858a;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="keyboard"></div>
+		<!--<div id="hover" style="position:absolute; background-color: blue; opacity: 0.5; width: 100px; height: 100px;top:0;left:0;font-size:xx-large"></div>-->
+		<div id="status"></div>
+		<div id="text" style="word-wrap:break-word"></div>
+		<script>
+			document.addEventListener('touchstart', function(e){
+				processEvent(e);
+				e.preventDefault();
+			
+			}, true)
+			document.addEventListener('touchend', function(e){
+				e.preventDefault();
+				document.getElementById('text').innerHTML += ' ';
+			}, true);
+			function findPos(robj) {
+				var obj = robj, curleft = curtop = 0;
+				if (obj.offsetParent) {
+					do {
+							curleft += obj.offsetLeft;
+							curtop += obj.offsetTop;
+					} while (obj = obj.offsetParent);
+				}
+				return [curleft + robj.offsetWidth/2, curtop + robj.offsetHeight/2]
+			}
+			
+			function sortpos(x, y){
+				return lpos.sort(function(a,b){
+					return (x - a[0])*(x - a[0]) + (y - a[1]) * (y - a[1]) - (x - b[0])*(x - b[0]) - (y - b[1]) * (y - b[1])
+				})
+			}
+			
+			function processEvent(e){
+				document.getElementById('status').innerHTML = [].slice.call(e.touches,0).map(function(x){
+					var sorted = sortpos(x.clientX, x.clientY);
+					//document.getElementById('hover').style.left = sorted[0][0]+'px';
+					//document.getElementById('hover').innerHTML = sorted[0][3]
+					//document.getElementById('hover').style.top =sorted[0][1]+'px';
+					document.getElementById('text').innerHTML += sorted[0][3]
+					return x.clientX+','+x.clientY+sorted.slice(0,5).map(function(d){
+						return JSON.stringify(d) //d[3]
+					})
+				}).join(' ')
+				
+			}
+			document.addEventListener('touchmove', function(e){
+				processEvent(e);	
+				e.preventDefault();
+			}, true);
+			
+			var letters = 'qwertyuiop/asdfghjkl/zxcvbnm'.split('');
+			var lmap = {};
+			for(var i = 0; i < letters.length; i++){
+				if(letters[i] == '/'){
+					document.getElementById('keyboard').appendChild(document.createElement('br'));
+				}else{
+					var l = document.createElement('div');
+					lmap[letters[i]] = l;
+					l.innerHTML = letters[i];
+					document.getElementById('keyboard').appendChild(l);
+				}
+			}
+			var lpos = [];
+			for(var i = 0; i < letters.length; i++){
+				if(letters[i] != '/'){
+					console.log(lmap[letters[i]]);
+					lpos.push(findPos(lmap[letters[i]]).concat([i, letters[i]]))
+				}
+			}
+			
+			
+			
+		</script>
+	</body>
+</html>
+		
